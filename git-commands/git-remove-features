@@ -1,0 +1,33 @@
+#!/bin/bash
+
+for d in *
+do
+  if [ -d $d/.git ]
+  then
+    cd $d
+    clear
+    pwd
+    git status
+    git clean -ddfxn
+    echo -n "Confirmation [y/n] (default is y): "
+    read key
+    key=${key:=y}
+    if [ $key == "n" ]; then
+      echo "exiting application..."
+      exit 1;
+    else
+      git clean -ddfx &&
+      git checkout . &&
+      git reset --hard &&
+      git checkout master &&
+      git fetch --all --prune &&
+      git pull &&
+      git branch | grep -v "master" | xargs git branch -D
+    fi
+    cd ..
+  fi
+done
+
+wait
+clear
+echo "jobs done!"

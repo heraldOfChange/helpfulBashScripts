@@ -1,0 +1,32 @@
+#!/bin/bash
+
+for d in *
+do
+  if [ -d $d/.git ]
+  then
+    cd $d
+    clear
+    pwd
+    git status
+    git clean -ddfxn
+    git stash list
+    echo -n "Confirmation [y/n] (default is y): "
+    read key
+    key=${key:=y}
+    if [ $key == "n" ]; then
+      echo "not reseting `pwd`..."
+    else
+      git stash clear &&
+      git clean -ddfx &&
+      git checkout . &&
+      git fetch --all --prune &&
+      git checkout master &&
+      git reset --hard origin/master
+    fi
+    cd ..
+  fi
+done
+
+wait
+clear
+echo "jobs done!"

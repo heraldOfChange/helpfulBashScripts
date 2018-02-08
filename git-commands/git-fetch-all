@@ -1,0 +1,15 @@
+#!/bin/bash
+
+for d in *
+do
+  if [ -d $d/.git ]
+  then
+    cd $d
+    pwd
+    git fetch --all &
+    cd ..
+  fi
+done
+
+wait
+echo "jobs done!"

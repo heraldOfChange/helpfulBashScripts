@@ -1,0 +1,50 @@
+#!/bin/bash
+# log changes for git projects after specified date
+
+clear
+
+###################
+# INPUT ARGUMENTS #
+###################
+for i in "$@"; do
+  case $i in
+    --output=*|-o=*) OUTPUT_DIR="${i#*=}" ;;
+    --project=*|-p=*) PROJECT="${i#*=}" ;;
+    --since=*|-s=*) DATE_SINCE="${i#*=}" ;;
+    --) shift; break ;;
+    -*) echo "Unrecognized option $i."; break;;
+    *) break;; 
+  esac
+  shift # skip parsed options
+done
+
+##########################################
+# ENSURE REQUIRED PARAMETERS WERE PASSED #
+##########################################
+if [ -z "$DATE_SINCE" ]; then printf "DATE_SINCE --since / -s not specified\n"; exit -1 ; fi
+if [ -z "$OUTPUT_DIR" ]; then printf "OUTPUT_DIR --output / -o not specified\n"; exit -1 ; fi
+
+printf "###################\n"
+printf "# GENERATING LOGS #\n"
+printf "###################\n"
+
+if [ -z "$PROJECT" ]; then
+  GITLAB_CHANGES="$OUTPUT_DIR/GITLAB_CHANGES"
+  `touch $GITLAB_CHANGES`
+  RANGE=`date -v -7d +"%Y-%m-%d"`
+  
+  for d in `find ./* -d 0 -type d`;do
+    cd ${d:2}
+    # printf "\n\n${d:2}\n" >> "$GITLAB_CHANGES"
+    git log -v --all --graph --decorate --date-order --since=$RANGE --stat # >> "$GITLAB_CHANGES"
+    cd ..
+  done
+else
+  cd $PROJECT
+  echo $PROJECT
+  GITLAB_CHANGES="$OUTPUT_DIR/$PROJECT"
+  `touch $GITLAB_CHANGES`
+  RANGE=`date -v -"$DATE_SINCE" +"%Y-%m-%d"`
+
+  git log -v --all --graph --decorate --date-order --since=$RANGE --stat # >> "$GITLAB_CHANGES"
+fi
